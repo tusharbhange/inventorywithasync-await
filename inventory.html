@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,12 +11,43 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <title>Inventory Management</title>
 </head>
-
 <body class="container">
-    <!-- Your HTML content here -->
+    <div class="row">
+        <h1 class="col-12">Inventory Management</h1>
+    </div>
+    <form class="row">
+        <div class="col-md-2">
+            <label for="item_name">Item Name</label><br>
+            <input type="text" id="item_name" name="item_name" required />
+        </div>
+        <div class="col-md-2">
+            <label for="item_desc">Item Description</label><br>
+            <input type="text" id="item_desc" name="item_desc" required />
+        </div>
+        <div class="col-md-2">
+            <label for="item_price">Item Price</label><br>
+            <input type="number" id="item_price" name="item_price" required />
+        </div>
+        <div class="col-md-2">
+            <label for="item_quantity">Item Quantity</label><br>
+            <input type="number" id="item_quantity" name="item_quantity" required />
+        </div>
+        <div class="col-md-2">
+            <br>
+            <button class="btn btn-primary" type="button" id="submit_btn">Add Item</button>
+        </div>
+    </form>
+    <br>
+    <br>
+    <div class="row">
+        <h1 class="col-md-12">Available Inventory</h1><br>
+        <br>
+        <br>
+        <div class="col-md-12" id="print"></div>
+    </div>
 
     <script>
-        const baseUrl = 'https://crudcrud.com/api/8b96b7e04aa3474688fc9ca283e0fcef';
+        const baseUrl = 'https://crudcrud.com/api/44560509068540c5b1abdb8e0799cbfa/appointmentdata';
         const submitBtn = document.getElementById('submit_btn');
         submitBtn.addEventListener('click', enterDetails);
 
@@ -57,12 +87,20 @@
                 let output = "";
 
                 for (let i = 0; i < items.length; i++) {
-                    const add = items[i];
-                    const key = add._id;
+                    const item = items[i]; // Get the item data from the response
+                    const key = item._id; // Assuming the item ID is stored in id
 
                     output += `
                     <div class="row">
-                        <!-- Your display code here -->
+                        <div class="col-md-2">${item.itemName}</div>
+                        <div class="col-md-2">${item.itemDesc}</div>
+                        <div class="col-md-2">${item.itemPrice}</div>
+                        <div class="col-md-2">${item.itemQuantity}</div>
+                        <div class="col-md-4">
+                            <button onclick="buyItem('${key}',1)">Buy 1</button>
+                            <button onclick="buyItem('${key}',2)">Buy 2</button>
+                            <button onclick="buyItem('${key}',3)">Buy 3</button>
+                        </div>
                     </div>`;
                 }
 
@@ -77,25 +115,27 @@
                 const response = await axios.get(`${baseUrl}/${itemId}`);
                 const item = response.data;
 
-                if (item.itemQuantity >= quantity) {
+                if (item && item.itemQuantity >= quantity) {
                     const remainingQuantity = item.itemQuantity - quantity;
                     const patchQuantity = {
+                        itemName: item.itemName,
+                        itemDesc: item.itemDesc,
+                        itemPrice: item.itemPrice,
                         itemQuantity: remainingQuantity,
                     };
 
-                    await axios.put(baseUrl + '/' + itemId, patchQuantity);
-                    await displayDetails();
-                    console.log(`Successfully`);
+                    await axios.put(`${baseUrl}/${itemId}`,patchQuantity);
+                   
+                    displayDetails();
                 } else {
-                    console.log('Insufficient quantity available.');
+                    console.log('Insufficient quantity available or item not found.');
                 }
             } catch (err) {
-                console.log(err);
+                console.log('Error while purchasing item: ' + err.message);
             }
         }
 
         displayDetails();
     </script>
 </body>
-
 </html>
